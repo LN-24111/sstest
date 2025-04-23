@@ -1,1 +1,65 @@
->Debug 3
+?loc.begin
+  var Priority
+  var sequenced = []
+  var Conditioned
+
+func Use(item)
+  ?item.CanActivate() &
+  ^item.GetCooldown(item) <= 0
+    equip @item@
+    activate @item@
+    return true
+  return false
+
+func SDash()
+  ?Use("bash") | Use("dash")
+    return true
+  :
+    return false
+
+func Dip()
+  equipR mind
+  return true
+
+func Dash()
+  ?SDash()
+    Priority = Dip
+    return true
+  return false
+
+func DashDip()
+  sequence.Add(Dash)
+
+?Priority & Priority()
+  Priority = null
+:?Interrupts()
+  Conditioned = null
+:?Conditioned & Conditioned()
+  Conditioned = null
+:?Sequenced()
+:
+  Run()
+
+func Interrupts()
+  var x = 0
+
+func Run()
+  ?foe=puff & foe.distance < 15
+  ^item.GetCooldown("bash") <= 0
+    DashDip()
+  :
+    loadout 1
+
+func Sequenced()
+  ?sequenced
+    var new = []
+    var executed = false
+    for i = 0 .. sequenced.Count()
+      ?!executed & sequenced[i]()
+        executed = true
+      :
+        new.Add(sequenced[i])
+    sequenced = new
+    return executed
+  :
+    return false
